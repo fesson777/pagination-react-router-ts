@@ -1,47 +1,17 @@
-import axios from 'axios'
-import { useState, useEffect } from 'react'
-import { Container, Stack, Pagination, TextField, Link } from '@mui/material'
-
-const BASE_URL = 'http://hn.algolia.com/api/v1/search?'
+import { Container } from '@mui/material'
+import { Routes, Route } from 'react-router-dom'
+import About from './pages/About'
+import HomePage from './pages/HomePage'
+import NotFound from './pages/NotFound'
 
 function App() {
-  const [posts, setPosts] = useState([])
-  const [query, setQuery] = useState('react')
-  const [page, setPage] = useState(1)
-  const [pageQty, setPageQty] = useState(0)
-
-  useEffect(() => {
-    axios.get(BASE_URL + `query=${query}&page=${page - 1}`).then(({ data }) => {
-      setPosts(data.hits)
-      setPageQty(data.nbPages)
-      console.log(data)
-    })
-  }, [query, page])
   return (
     <Container sx={{ marginTop: 5 }} maxWidth="md">
-      <TextField
-        fullWidth
-        label="query"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <Stack spacing={2}>
-        {!!pageQty && (
-          <Pagination
-            count={pageQty}
-            page={page}
-            onChange={(_, num) => {
-              setPage(num)
-            }}
-            sx={{ marginY: 3, marginX: 'auto' }}
-          />
-        )}
-        {posts.map((post: any) => (
-          <Link key={post.objectID} href={post.url}>
-            {post.title || post.story_title}
-          </Link>
-        ))}
-      </Stack>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </Container>
   )
 }
