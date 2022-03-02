@@ -7,6 +7,7 @@ import {
   PaginationItem,
   TextField,
   Link,
+  Button,
 } from '@mui/material'
 
 const BASE_URL = 'http://hn.algolia.com/api/v1/search?'
@@ -14,14 +15,14 @@ const BASE_URL = 'http://hn.algolia.com/api/v1/search?'
 const HomePage = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const currentSearch = parseInt(location.search?.split('=')[1]) || 1
-
   const [posts, setPosts] = useState([])
-  const [query, setQuery] = useState('react')
+  const [query, setQuery] = useState('React')
+  const currentSearch = parseInt(location.search?.split('=')[1]) || 1
   const [page, setPage] = useState(currentSearch)
   const [pageQty, setPageQty] = useState(0)
+  const [error, setError] = useState(false)
 
-  useEffect(() => {
+  const getAxios = (query: string, page: number) => {
     axios.get(BASE_URL + `query=${query}&page=${page - 1}`).then(({ data }) => {
       setPosts(data.hits)
       setPageQty(data.nbPages)
@@ -29,18 +30,51 @@ const HomePage = () => {
         setPage(1)
         navigate('/')
       }
-      console.log(data)
     })
-  }, [query, page])
+  }
+
+  useEffect(() => {
+    getAxios(query, page)
+  }, [page])
+
+  function handleTextField(e: any) {
+    setQuery(e.target.value)
+    if (e.key === 'Enter') {
+      getAxios(query, page)
+    }
+  }
+
+  function handleSubmit(e: any) {
+    e.preventDefault()
+    setError(false)
+
+    if (query == '') {
+      setError(true)
+      return
+    }
+    getAxios(query, page)
+  }
   return (
     <>
-      <TextField
-        required
-        fullWidth
-        label="query"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <form noValidate autoComplete="off" onSubmit={handleSubmit}>
+        <Stack
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+          spacing={2}
+        >
+          <TextField
+            fullWidth
+            label="query"
+            value={query}
+            onChange={handleTextField}
+            error={error}
+          />
+          <Button variant="contained" size="small" type="submit">
+            Search
+          </Button>
+        </Stack>
+      </form>
       <Stack spacing={2}>
         {!!pageQty && (
           <Pagination
